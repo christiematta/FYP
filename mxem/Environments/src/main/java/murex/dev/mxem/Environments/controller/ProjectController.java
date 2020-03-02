@@ -3,9 +3,7 @@ package murex.dev.mxem.Environments.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Environments.model.Project;
-import murex.dev.mxem.Environments.model.Request;
 import murex.dev.mxem.Environments.service.ProjectService;
-import murex.dev.mxem.Environments.service.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;

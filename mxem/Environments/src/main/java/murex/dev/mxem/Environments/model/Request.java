@@ -17,7 +17,7 @@ public class Request {
     public String id;
     public String name;
     public String type;
-    public String environmentId;
+    public Environment environment;
     public String operation;
     public String status;
     public List<Event> events;

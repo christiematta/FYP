@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Environments.model.Environment;
 import murex.dev.mxem.Environments.model.Event;
 import murex.dev.mxem.Environments.model.Request;
-import murex.dev.mxem.Environments.model.SchedulerRequest;
 import murex.dev.mxem.Environments.service.EnvironmentService;
-import murex.dev.mxem.Environments.service.RabbitMQSender;
-import murex.dev.mxem.Environments.service.RequestService;
+import murex.dev.mxem.Environments.service.RabbitMQService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;
@@ -33,20 +31,17 @@ public class EnvironmentController {
     EnvironmentService environmentService;
 
     @Autowired
-    RequestService requestService;
-
-    @Autowired
-    RabbitMQSender rabbitMQSender;
+    RabbitMQService rabbitMQService;
 
     @GetMapping(value = "{name}/startService")
-    public ResponseEntity<SchedulerRequest> producer(@PathVariable String name) {
+    public ResponseEntity<Request> producer(@PathVariable String name) {
 
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("yyyy_mm_dd_hh_mm_ss");
         DateFormat dateFormat2 = new SimpleDateFormat("yyyy-mm-dd");
         String strDate = dateFormat.format(date);
 
-        SchedulerRequest req = new SchedulerRequest();
+        Request req = new Request();
         req.setEnvironment(environmentService.findByName(name).get(0));
         req.setName("request_"+name+"strDate");
         req.setType("Environment");
@@ -61,17 +56,8 @@ public class EnvironmentController {
         events.add(startEvent);
         req.setEvents(events);
 
+        rabbitMQService.send(req);
 
-        Request request = new Request();
-        request.setEnvironmentId(name);
-        request.setName("request_"+name+"strDate");
-        request.setType("Environment");
-        request.setOperation("start_service");
-        request.setStatus("Queued");
-        request.setEvents(events);
-
-        rabbitMQSender.send(req);
-        requestService.add(request);
         return ResponseEntity.ok(req);
     }
 
