@@ -1,10 +1,8 @@
-package murex.dev.mxem.Authorization.repository;
+package murex.dev.mxem.Authorization.service;
 
 import murex.dev.mxem.Authorization.redis.Token;
 
-
-public interface TokenRepository{
-
+public interface ITokenService {
     void save(Token token);
 
     Token findById(String id);
@@ -16,4 +14,5 @@ public interface TokenRepository{
     Boolean tokenExists(String token);
 
     String getUserFromToken(String token);
+
 }

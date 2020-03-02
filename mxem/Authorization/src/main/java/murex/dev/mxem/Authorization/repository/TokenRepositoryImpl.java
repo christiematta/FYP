@@ -53,4 +53,17 @@ public class TokenRepositoryImpl implements TokenRepository {
         }
         return false;
     }
+
+    @Override
+    public String getUserFromToken(String token) {
+        Map<String, Token> tokens= hashOperations.entries(KEY);
+
+        for (Map.Entry<String, Token> entry : tokens.entrySet()) {
+            Token value= entry.getValue();
+            if(value.getToken().equals(token)){
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
 }

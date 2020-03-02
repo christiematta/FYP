@@ -9,6 +9,7 @@ import murex.dev.mxem.Authorization.model.User;
 import murex.dev.mxem.Authorization.redis.Token;
 import murex.dev.mxem.Authorization.repository.TokenRepository;
 import murex.dev.mxem.Authorization.config.JwtConfig;
+import murex.dev.mxem.Authorization.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
@@ -47,7 +48,7 @@ public class ValidateController {
     }
 
     @Autowired
-    TokenRepository tokenRepository;
+    TokenService tokenService;
 
 
     @PostMapping("/authorize")
@@ -74,13 +75,13 @@ public class ValidateController {
                 .compact();
         response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
         Token tok = new Token(auth.getName(),token);
-        Token res = tokenRepository.findById(auth.getName());
+        Token res = tokenService.findById(auth.getName());
         if(res==null)
         {
-            tokenRepository.save(tok);
+            tokenService.save(tok);
         }
         else{
-            tokenRepository.update(tok);
+            tokenService.update(tok);
         }
 
         return(ResponseEntity.ok("Authentication Successful"));
@@ -96,7 +97,7 @@ public class ValidateController {
         token = token.replace("Bearer ", "");
         try {
 
-       Boolean res = tokenRepository.tokenExists(token);
+       Boolean res = tokenService.tokenExists(token);
 
             if(res==true) {
                 log.info("Token "+token+" is valid");
@@ -109,6 +110,34 @@ public class ValidateController {
 
 
     } catch (JwtException e) {
+            throw new IllegalStateException(String.format("Token %s cannot be trusted", token));
+        }
+
+
+    }
+
+    @PostMapping("/identify")
+    public ResponseEntity<Void> identifyUser(@RequestHeader("Authorization") String token, HttpServletResponse response){
+        if (Strings.isNullOrEmpty(token) || !token.startsWith("Bearer ")) {
+            return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED );
+        }
+        token = token.replace("Bearer ", "");
+        try {
+
+            String user = tokenService.getUserFromToken(token);
+
+            if(user!=null) {
+                log.info("Token "+token+" is valid");
+                response.addHeader("Username",user);
+                return new ResponseEntity<Void>( HttpStatus.OK );}
+            else{
+                log.info("Token "+token+" is not valid");
+                return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED);
+            }
+
+
+
+        } catch (JwtException e) {
             throw new IllegalStateException(String.format("Token %s cannot be trusted", token));
         }
 
