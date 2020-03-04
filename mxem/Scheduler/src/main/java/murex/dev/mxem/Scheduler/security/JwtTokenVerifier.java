@@ -5,7 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import murex.dev.mxem.Environments.exception.TokenExpiredException;
+import murex.dev.mxem.Scheduler.exception.TokenExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -56,7 +56,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
 
             Claims body = claimsJws.getBody();
             String username = body.getSubject();
-            List<String> authorities = (List<String>) body.get("authorities");
+            List<String> authorities = (List<String>) body.get("roles");
             Set<SimpleGrantedAuthority> simpleGrantedAuthorities= new HashSet<SimpleGrantedAuthority>();
 
             for(String role : authorities){

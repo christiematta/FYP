@@ -57,7 +57,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
 
             String username = body.getSubject();
 
-            List<String> authorities = (List<String>) body.get("authorities");
+            List<String> authorities = (List<String>) body.get("roles");
             System.out.println("Lololo");
             System.out.println(authorities);
 
