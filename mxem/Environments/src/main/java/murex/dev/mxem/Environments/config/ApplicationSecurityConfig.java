@@ -47,7 +47,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilterBefore(new JwtTokenVerifier(secretKey, jwtConfig), BasicAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/environments/**").authenticated()
+                .antMatchers("/environments/**").hasRole("ADMIN")
                 .antMatchers("/projects/**").authenticated();
        //       .anyRequest().authenticated();
     }

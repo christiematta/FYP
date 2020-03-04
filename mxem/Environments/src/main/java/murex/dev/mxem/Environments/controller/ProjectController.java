@@ -3,6 +3,7 @@ package murex.dev.mxem.Environments.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Environments.model.Project;
+import murex.dev.mxem.Environments.service.AuthorizationService;
 import murex.dev.mxem.Environments.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -28,6 +29,10 @@ public class ProjectController {
     @Autowired
     ProjectService projectService;
 
+
+    @Autowired
+    AuthorizationService authorizationService;
+
     @GetMapping
     public ResponseEntity<List<Project>> getAllProjects() {
         log.info("Calling get all environments");
@@ -43,7 +48,8 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addProject(@Valid @RequestBody Project project, UriComponentsBuilder builder){
+    public ResponseEntity<Void> addProject(@Valid @RequestBody Project project, UriComponentsBuilder builder,@RequestHeader("Authorization") String token){
+        project.updateOnCreation(authorizationService.getUsernameFromToken(token));
         projectService.add(project);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/project/{id}").buildAndExpand(project.getId()).toUri());

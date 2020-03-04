@@ -40,17 +40,22 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .addFilterBefore(new JwtTokenVerifier(secretKey, jwtConfig), BasicAuthenticationFilter.class)
-                .authorizeRequests()
-                .antMatchers("/environments").hasRole("ADMIN")
-                .antMatchers("/projects").authenticated()
-                .antMatchers("/environments/**").authenticated()
-                .antMatchers("/projects/**").authenticated();
+
+        http.authorizeRequests().antMatchers("/**").permitAll();
+//        http
+//                .csrf().disable()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//               .addFilterBefore(new JwtTokenVerifier(secretKey, jwtConfig), BasicAuthenticationFilter.class)
+//                .authorizeRequests()
+//                .antMatchers("/**").permitAll();
+
+//                .authorizeRequests()
+//                .antMatchers("/environments").hasRole("ADMIN")
+//                .antMatchers("/projects").authenticated()
+//                .antMatchers("/environments/**").authenticated()
+//                .antMatchers("/projects/**").authenticated();
        //         .anyRequest().authenticated();
 
 

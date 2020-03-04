@@ -12,14 +12,9 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @ToString
 @Document(collection="projects")
-public class Project {
+public class Project extends Structure {
     @Id
     public String id;
     public String name;
-    public Boolean isDeleted;
-    public String createdOn;
-    public String createdBy;
-    public String modifiedOn;
-    public String modifiedBy;
     public String owner;
 }

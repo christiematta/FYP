@@ -14,20 +14,15 @@ import java.util.Set;
 @ToString
 @Getter
 @Setter
-@Entity
 @Table(name="roles")
-public class Role {
+@javax.persistence.Entity
+public class Role extends Structure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotEmpty(message="name is mandatory. Please provide username")
     @Size(min=2, message="Name should be at least 2 characters")
     private String name;
-    private Boolean is_deleted;
-    private Date created_on;
-    private String created_by;
-    private Date modified_on;
-    private String modified_by;
 
     @ManyToMany
     @JsonIgnore

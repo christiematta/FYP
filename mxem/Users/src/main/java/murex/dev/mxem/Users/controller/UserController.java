@@ -1,6 +1,7 @@
 package murex.dev.mxem.Users.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import murex.dev.mxem.Users.service.AuthorizationService;
 import murex.dev.mxem.Users.service.UserService;
 import murex.dev.mxem.Users.exception.RoleNotFoundException;
 import murex.dev.mxem.Users.exception.UserNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +32,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    AuthorizationService authorizationService;
+
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -37,10 +42,10 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 //all methods should return a response entity
-    @GetMapping("/{id}")
-    public ResponseEntity<Optional<User>> getUserDetails(@PathVariable String id) {
+    @GetMapping("/{name}")
+    public ResponseEntity<User> getUserDetails(@PathVariable String name) {
         try {
-            Optional<User> user = userService.findUserById(Long.parseLong(id));
+            User user = userService.findUserByName(name);
             return ResponseEntity.ok(user);
         } catch (UserNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -48,7 +53,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/roles")
-    public ResponseEntity<Set<Role>> getRolesForUser(@PathVariable Long id) {
+    public ResponseEntity<Set<Role>> getRolesForUser(@PathVariable String id) {
         try{
         return ResponseEntity.ok(userService.findRolesForUser(id));}
         catch(UserNotFoundException e){
@@ -89,7 +94,8 @@ public class UserController {
 
 
     @PostMapping
-    public ResponseEntity<Void> addUser(@Valid @RequestBody User user, UriComponentsBuilder builder){
+    public ResponseEntity<Void> addUser(@Valid @RequestBody User user, UriComponentsBuilder builder, @RequestHeader("Authorization") String token){
+        user.updateOnCreation(authorizationService.getUsernameFromToken(token));
         userService.addUser(user);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/users/{id}").buildAndExpand(user.getId()).toUri());
@@ -111,7 +117,7 @@ public class UserController {
     public ResponseEntity<Set<Role>> addRoleForUser(@PathVariable String User_id, @PathVariable String Role_id) throws UserNotFoundException, RoleNotFoundException {
         try { userService.addRoleForUser(Long.parseLong(User_id), Long.parseLong(Role_id));
             log.info("Adding a role for user # "+User_id);
-            return getRolesForUser(Long.parseLong(User_id));
+            return getRolesForUser(User_id);
         }
         catch(UserNotFoundException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

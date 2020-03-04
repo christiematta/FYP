@@ -13,6 +13,9 @@ public class EnvironmentService implements IEnvironmentService {
     @Autowired
     EnvironmentRepository environmentRepository;
 
+    @Autowired
+    AuthorizationService authorizationService;
+
     public Environment add(Environment environment){
         environmentRepository.save(environment);
         return environment;

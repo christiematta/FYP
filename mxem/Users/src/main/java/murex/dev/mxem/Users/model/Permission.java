@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.sql.Struct;
 import java.util.Date;
 import java.util.Set;
 
@@ -16,18 +18,14 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name="permissions")
-public class Permission {
+public class Permission extends Structure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotEmpty(message="name is mandatory. Please provide username")
     @Size(min=2, message="Name should be at least 2 characters")
     private String name;
-    private Boolean is_deleted;
-    private Date created_on;
-    private String created_by;
-    private Date modified_on;
-    private String modified_by;
+
 
     @ManyToMany
     @JsonIgnore

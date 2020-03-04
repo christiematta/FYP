@@ -1,10 +1,12 @@
 package murex.dev.mxem.Users.controller;
 
+import io.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Users.exception.PermissionNotFoundException;
 import murex.dev.mxem.Users.exception.RoleNotFoundException;
 import murex.dev.mxem.Users.model.Permission;
 import murex.dev.mxem.Users.model.Role;
+import murex.dev.mxem.Users.service.AuthorizationService;
 import murex.dev.mxem.Users.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -30,6 +32,9 @@ import java.util.Set;
 public class PermissionController {
     @Autowired
     PermissionService permissionService;
+
+    @Autowired
+    AuthorizationService authorizationService;
 
     @GetMapping
     public ResponseEntity<List<Permission>> getAllPermissions(){
@@ -79,7 +84,8 @@ public class PermissionController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addPermission(@Valid @RequestBody Permission permission, UriComponentsBuilder builder){
+    public ResponseEntity<Void> addPermission(@Valid @RequestBody Permission permission, UriComponentsBuilder builder,@RequestHeader("Authorization") String token){
+        permission.updateOnCreation(authorizationService.getUsernameFromToken(token));
         permissionService.addPermission(permission);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/permissions/{id}").buildAndExpand(permission.getId()).toUri());
@@ -87,8 +93,9 @@ public class PermissionController {
     }
 
     @PutMapping(path="/{permissionId}")
-    public ResponseEntity<Permission> updatePermission(@PathVariable String permissionId, @RequestBody Permission permission) throws PermissionNotFoundException {
+    public ResponseEntity<Permission> updatePermission(@PathVariable String permissionId, @RequestBody Permission permission,@RequestHeader("Authorization") String token) throws PermissionNotFoundException {
         try {
+            permission.updateOnModification(authorizationService.getUsernameFromToken(token));
             permissionService.updatePermission(Long.parseLong(permissionId), permission);
             return ResponseEntity.ok(permission);
         }catch(PermissionNotFoundException e){
@@ -97,8 +104,9 @@ public class PermissionController {
     }
 
     @PatchMapping(path="/{permissionId}")
-    public ResponseEntity<Permission>updateNameOfPermission(@PathVariable Long permissionId, @RequestBody String name) throws PermissionNotFoundException {
+    public ResponseEntity<Permission>updateNameOfPermission(@PathVariable Long permissionId, @RequestBody String name,@RequestHeader("Authorization") String token) throws PermissionNotFoundException {
         try {
+
             permissionService.updateNameofPermission(permissionId,name);  //it saved the new name in the database
             Optional<Permission>permission=permissionService.findPermissionById(permissionId);
             return ResponseEntity.ok(permission.get());

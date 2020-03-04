@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Environments.model.Environment;
 import murex.dev.mxem.Environments.model.Event;
 import murex.dev.mxem.Environments.model.Request;
+import murex.dev.mxem.Environments.service.AuthorizationService;
 import murex.dev.mxem.Environments.service.EnvironmentService;
 import murex.dev.mxem.Environments.service.RabbitMQService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ import java.util.*;
 public class EnvironmentController {
     @Autowired
     EnvironmentService environmentService;
+
+    @Autowired
+    AuthorizationService authorizationService;
 
     @Autowired
     RabbitMQService rabbitMQService;
@@ -77,7 +81,8 @@ public class EnvironmentController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addEnvironment(@Valid @RequestBody Environment environment, UriComponentsBuilder builder){
+    public ResponseEntity<Void> addEnvironment(@Valid @RequestBody Environment environment, UriComponentsBuilder builder,@RequestHeader("Authorization") String token){
+        environment.updateOnCreation(authorizationService.getUsernameFromToken(token));
         environmentService.add(environment);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/environments/{id}").buildAndExpand(environment.getId()).toUri());

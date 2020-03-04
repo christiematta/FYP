@@ -5,11 +5,12 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Authorization.config.UsernameAndPasswordAuthenticationRequest;
+import murex.dev.mxem.Authorization.model.Role;
 import murex.dev.mxem.Authorization.model.User;
 import murex.dev.mxem.Authorization.redis.Token;
-import murex.dev.mxem.Authorization.repository.TokenRepository;
 import murex.dev.mxem.Authorization.config.JwtConfig;
 import murex.dev.mxem.Authorization.service.TokenService;
+import murex.dev.mxem.Authorization.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
 
 @CrossOrigin( maxAge = 3600)
 @Slf4j
@@ -33,6 +36,8 @@ import java.util.Date;
 @RefreshScope
 public class ValidateController {
 
+    @Autowired
+    UserService userService;
 
     String ldapUrl = "ldap://root-dc.murex.com:3268";
     String ldapDomain = "murex.com";
@@ -50,6 +55,18 @@ public class ValidateController {
     @Autowired
     TokenService tokenService;
 
+    @PostMapping("/zouzou")
+    public ResponseEntity<User> zouzou(@RequestBody UsernameAndPasswordAuthenticationRequest user, HttpServletResponse response) throws URISyntaxException {
+        String username= user.getUsername();
+        String password= user.getPassword();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                username,
+                password
+        );
+        Authentication auth =  defaultLdapProvider.authenticate(authentication);
+
+        ArrayList<String> authority = new ArrayList<>();
+        return ResponseEntity.ok(userService.getUser(username));}
 
     @PostMapping("/authorize")
     public ResponseEntity<String> login(@RequestBody UsernameAndPasswordAuthenticationRequest user, HttpServletResponse response){
@@ -62,8 +79,10 @@ public class ValidateController {
         Authentication auth =  defaultLdapProvider.authenticate(authentication);
 
         ArrayList<String> authority = new ArrayList<>();
-        authority.add("ADMIN");
-        authority.add("USER");
+        Role[] roles = userService.getRoles(username);
+        for(Role role : roles){
+            authority.add(role.getName());
+        }
         String token = Jwts.builder()
                 .setSubject(auth.getName())
 //                .claim("authorities", ["ADMIN"])

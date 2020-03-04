@@ -38,8 +38,17 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Set<Role> findRolesForUser(Long id) throws UserNotFoundException {
-        return findUserById(id).get().getRoles();
+    public User findUserByName(String id) throws UserNotFoundException {
+        List<User> user= userRepository.findByName(id);
+        if(user.size()==0){
+            throw new UserNotFoundException();
+        }
+        return user.get(0);
+    }
+
+    @Override
+    public Set<Role> findRolesForUser(String id) throws UserNotFoundException {
+        return findUserByName(id).getRoles();
     }
 
 

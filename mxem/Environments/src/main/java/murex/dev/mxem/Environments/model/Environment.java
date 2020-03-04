@@ -4,7 +4,7 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Id;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @Document(collection="environments")
-public class Environment {
+public class Environment extends Structure {
 
     @Id
     public String id;
@@ -23,11 +23,6 @@ public class Environment {
     public String owner;
     public Long projectId;
     public Host host;
-    public List<String> tags;
-    public List<Database> databases;
-    public Boolean isDeleted;
-    public String createdOn;
-    public String createdBy;
-    public String modifiedOn;
-    public String modifiedBy;
+    public List<String> tags=new ArrayList<String>();
+    public List<Database> databases=new ArrayList<Database>();
 }

@@ -7,6 +7,7 @@ import murex.dev.mxem.Users.exception.UserNotFoundException;
 import murex.dev.mxem.Users.model.Permission;
 import murex.dev.mxem.Users.model.Role;
 import murex.dev.mxem.Users.model.User;
+import murex.dev.mxem.Users.service.AuthorizationService;
 import murex.dev.mxem.Users.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -32,6 +33,9 @@ import java.util.Set;
 public class RoleController {
     @Autowired
     RoleService roleService;
+
+    @Autowired
+    AuthorizationService authorizationService;
 
     @GetMapping
     public ResponseEntity<List<Role>> getAllRoles() {
@@ -114,7 +118,8 @@ public class RoleController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> addRole(@Valid @RequestBody Role role, UriComponentsBuilder builder){
+    public ResponseEntity<Void> addRole(@Valid @RequestBody Role role, UriComponentsBuilder builder, @RequestHeader("Authorization") String token){
+        role.updateOnCreation(authorizationService.getUsernameFromToken(token));
         roleService.addRole(role);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(builder.path("/roles/{id}").buildAndExpand(role.getId()).toUri());

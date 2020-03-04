@@ -13,7 +13,8 @@ public interface IUserService {
 
     public List<User> findAllUsers();
     public Optional<User> findUserById(Long id) throws UserNotFoundException;
-    public Set<Role> findRolesForUser(Long id) throws UserNotFoundException;
+    public User findUserByName(String id) throws UserNotFoundException;
+    public Set<Role> findRolesForUser(String id) throws UserNotFoundException;
     public void deleteAllUsers();
     public void deleteUserById(Long id) throws UserNotFoundException;
     public void deleteRolesForUser(Long id) throws UserNotFoundException;
