@@ -54,10 +54,11 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
                     .parseClaimsJws(token);
 
             Claims body = claimsJws.getBody();
-
+System.out.println("body");
+            System.out.println(body);
             String username = body.getSubject();
 
-            List<String> authorities = (List<String>) body.get("authorities");
+            List<String> authorities = (List<String>) body.get("roles");
             System.out.println("Lololo");
             System.out.println(authorities);
 

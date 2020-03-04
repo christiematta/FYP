@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Authorization.config.UsernameAndPasswordAuthenticationRequest;
 import murex.dev.mxem.Authorization.model.Role;
+import murex.dev.mxem.Authorization.model.RolesPermissions;
 import murex.dev.mxem.Authorization.model.User;
 import murex.dev.mxem.Authorization.redis.Token;
 import murex.dev.mxem.Authorization.config.JwtConfig;
@@ -55,19 +56,6 @@ public class ValidateController {
     @Autowired
     TokenService tokenService;
 
-    @PostMapping("/zouzou")
-    public ResponseEntity<User> zouzou(@RequestBody UsernameAndPasswordAuthenticationRequest user, HttpServletResponse response) throws URISyntaxException {
-        String username= user.getUsername();
-        String password= user.getPassword();
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                username,
-                password
-        );
-        Authentication auth =  defaultLdapProvider.authenticate(authentication);
-
-        ArrayList<String> authority = new ArrayList<>();
-        return ResponseEntity.ok(userService.getUser(username));}
-
     @PostMapping("/authorize")
     public ResponseEntity<String> login(@RequestBody UsernameAndPasswordAuthenticationRequest user, HttpServletResponse response){
         String username= user.getUsername();
@@ -79,15 +67,13 @@ public class ValidateController {
         Authentication auth =  defaultLdapProvider.authenticate(authentication);
 
         ArrayList<String> authority = new ArrayList<>();
-        Role[] roles = userService.getRoles(username);
-        for(Role role : roles){
-            authority.add(role.getName());
-        }
+        RolesPermissions rolesPermissions= userService.getRoles(username);
+
         String token = Jwts.builder()
                 .setSubject(auth.getName())
 //                .claim("authorities", ["ADMIN"])
-                .claim("authorities", authority)
-                .claim("testing", "testing")
+                .claim("roles", rolesPermissions.getRoles())
+                .claim("permissions",rolesPermissions.getPermissions())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays())))
                 .signWith(secretKey)

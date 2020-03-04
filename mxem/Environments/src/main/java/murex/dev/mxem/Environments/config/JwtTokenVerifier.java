@@ -56,7 +56,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
 
             Claims body = claimsJws.getBody();
             String username = body.getSubject();
-            List<String> authorities = (List<String>) body.get("authorities");
+            List<String> authorities = (List<String>) body.get("roles");
             Set<SimpleGrantedAuthority> simpleGrantedAuthorities= new HashSet<SimpleGrantedAuthority>();
 
             for(String role : authorities){

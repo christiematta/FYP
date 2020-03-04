@@ -41,9 +41,14 @@ public class RoleService implements IRoleService {
         return role;
     }
 
+    public Role findRoleByName(String name){
+       return (roleRepository.findByName(name).get(0));
+
+    }
+
     @Override
-    public Set<Permission> findPermissionsForRole(Long id) throws RoleNotFoundException {
-        return findRoleById(id).get().getPermissions();
+    public Set<Permission> findPermissionsForRole(String id) throws RoleNotFoundException {
+        return findRoleByName(id).getPermissions();
     }
 
     @Override

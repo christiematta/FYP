@@ -1,6 +1,7 @@
 package murex.dev.mxem.Environments.interceptor;
 
 
+import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Environments.exception.TokenNotValidException;
 import murex.dev.mxem.Environments.util.BeanUtil;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -14,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+@Slf4j
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 
     private DiscoveryClient discoveryClient= BeanUtil.getBean(DiscoveryClient.class);
@@ -39,6 +41,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
                 conn.setRequestMethod("POST");
 
                 if (conn.getResponseCode() !=200) {
+                    log.info("L'erreur est ici :(( ");
                     throw new TokenNotValidException();
                 }
                  return true;

@@ -54,7 +54,7 @@ public class RoleController {
     }
 
     @GetMapping("/{id}/permissions")
-    public ResponseEntity<Set<Permission>> getPermissionsForRole(@PathVariable Long id) {
+    public ResponseEntity<Set<Permission>> getPermissionsForRole(@PathVariable String id) {
         try{
             return ResponseEntity.ok(roleService.findPermissionsForRole(id));}
         catch(RoleNotFoundException e){
@@ -167,7 +167,7 @@ public class RoleController {
         try {
             roleService.addPermissionForRole(Long.parseLong(Role_id), Long.parseLong(Permission_Id));
             log.info("Adding a permission for role # "+Role_id);
-            return getPermissionsForRole(Long.parseLong(Role_id));
+            return getPermissionsForRole(Role_id);
         }
         catch(RoleNotFoundException e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

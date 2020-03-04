@@ -15,7 +15,7 @@ public interface IRoleService {
 
     public List<Role> findAllRoles();
     public Optional<Role> findRoleById(Long id) throws RoleNotFoundException;
-    public Set<Permission> findPermissionsForRole(Long id) throws RoleNotFoundException;
+    public Set<Permission> findPermissionsForRole(String id) throws RoleNotFoundException;
     public Set<User> findUsersForRole(Long id) throws RoleNotFoundException;
     public void deleteAllRoles();
     public void deleteRoleById(Long id) throws RoleNotFoundException;

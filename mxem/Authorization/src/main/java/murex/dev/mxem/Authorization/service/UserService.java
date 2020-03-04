@@ -4,6 +4,7 @@ package murex.dev.mxem.Authorization.service;
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Authorization.model.Permission;
 import murex.dev.mxem.Authorization.model.Role;
+import murex.dev.mxem.Authorization.model.RolesPermissions;
 import murex.dev.mxem.Authorization.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,7 +27,7 @@ public class UserService {
     @Autowired
     DiscoveryClient discoveryClient;
 
-    public Role[] getRoles(String username){
+    public RolesPermissions getRoles(String username){
     try{
             RestTemplate restTemplate = new RestTemplate();
             URI uri= discoveryClient.getInstances("Users")
@@ -36,10 +38,24 @@ public class UserService {
             URI userUri=new URI(uri.toString()+"/users/"+username+"/roles");
 
             ResponseEntity<Role[]> entity = restTemplate.getForEntity(userUri,Role[].class);
-            log.info("My entity :" +entity);
             Role[] roles = entity.getBody();
-        log.info("My roles :" +entity.getBody().toString());
-            return roles;
+        Set<String> permNames =  new HashSet<String>();
+        Set<String> roleNames = new HashSet<String>();
+            for(Role role : roles){
+                roleNames.add(role.getName());
+                URI roleUri = new URI(uri.toString() + "/roles/" + role.getName() + "/permissions");
+               Permission[] permissions = restTemplate.getForEntity(roleUri,Permission[].class).getBody();
+               log.info("Les permissions du role : "+ role.getName()+" sont "+ permissions);
+                for(Permission perm : permissions ){
+                    permNames.add(perm.getName());
+                }
+
+            }
+            log.info("L'ensemble des permissions :" + permNames);
+            RolesPermissions rolesPermissions = new RolesPermissions();
+            rolesPermissions.setRoles(roleNames);
+            rolesPermissions.setPermissions(permNames);
+            return rolesPermissions;
 
 
     } catch (Exception e) {
@@ -47,61 +63,6 @@ public class UserService {
 }
     return null;
     }
-
-    public Permission[] getPermission(String rolename){
-        try{
-            RestTemplate restTemplate = new RestTemplate();
-            URI uri= discoveryClient.getInstances("Users")
-                    .stream()
-                    .map(si -> si.getUri())
-                    .findFirst().get();
-
-            URI userUri=new URI(uri.toString()+"/roles/"+rolename+"/permissions");
-
-            ResponseEntity<Permission[]> entity = restTemplate.getForEntity(userUri,Permission[].class);
-            log.info("My entity :" +entity);
-            Permission[] perms = entity.getBody();
-            log.info("My roles :" +entity.getBody().toString());
-            return perms;
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-
-//    public Set<Permission> getPermissions(Long roleId){
-//        try {
-//            RestTemplate a;
-//            URI uri= discoveryClient.getInstances("Users")
-//                    .stream()
-//                    .map(si -> si.getUri())
-//                    .findFirst().get();
-//
-//            URL url = null;
-//
-//            url = new URL(uri.toURL(),"/roles/"+roleId.toString());
-//
-//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//            conn.setRequestMethod("GET");
-//
-//            if (conn.getResponseCode() ==200) {
-//                Role role = (Role) conn.getContent();
-//                return role.getPermissions();
-//            }
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (ProtocolException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
 
 
 }
