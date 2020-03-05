@@ -9,7 +9,6 @@
         <module name="Scheduler" />
         <module name="Authorization" />
         <module name="Gateway" />
-        <module name="Users" />
         <module name="Environments" />
       </profile>
     </annotationProcessing>
@@ -17,6 +16,7 @@
       <module name="Authentication" target="11" />
       <module name="environment-service" target="1.8" />
       <module name="gateway-service" target="11" />
+      <module name="Users" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

@@ -3,10 +3,12 @@ package murex.dev.mxem.Authorization.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
-import murex.dev.mxem.Authorization.redis.Token;
+import murex.dev.mxem.Authorization.model.Token;
 import murex.dev.mxem.Authorization.repository.TokenRepository;
+import murex.dev.mxem.Authorization.service.TokenService;
 import murex.dev.mxem.Authorization.util.BeanUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -27,6 +29,7 @@ import java.util.Date;
 /**
  * This class is used to verify credentials
  */
+
 public class JwtUsernameAndPasswordAuthenticationFilter  extends UsernamePasswordAuthenticationFilter {
 
 
@@ -37,7 +40,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter  extends UsernamePasswor
     private String ldapDomain;
 
 
-    TokenRepository tokenRepository= BeanUtil.getBean(TokenRepository.class);
+    TokenService tokenService= BeanUtil.getBean(TokenService.class);
 
     @Autowired
     public JwtUsernameAndPasswordAuthenticationFilter(
@@ -97,13 +100,13 @@ public class JwtUsernameAndPasswordAuthenticationFilter  extends UsernamePasswor
                 .compact();
         response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
         Token tok = new Token(authResult.getName(),token);
-        Token res = tokenRepository.findById(authResult.getName());
+        Token res = tokenService.findByUsername(authResult.getName());
         if(res==null)
         {
-            tokenRepository.save(tok);
+            tokenService.save(tok);
         }
         else{
-            tokenRepository.update(tok);
+            tokenService.update(tok);
         }
 
     }

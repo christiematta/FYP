@@ -1,11 +1,17 @@
 package murex.dev.mxem.Authorization.service;
 
-import murex.dev.mxem.Authorization.redis.Token;
+import murex.dev.mxem.Authorization.exception.TokenNotValidException;
+import murex.dev.mxem.Authorization.model.Token;
+
+import java.util.Optional;
+
 
 public interface ITokenService {
     void save(Token token);
 
-    Token findById(String id);
+    Token findById(Long id);
+
+    Token findByUsername(String username);
 
     void update(Token token);
 
@@ -13,6 +19,6 @@ public interface ITokenService {
 
     Boolean tokenExists(String token);
 
-    String getUserFromToken(String token);
+    String getUserFromToken(String token) throws TokenNotValidException;
 
 }

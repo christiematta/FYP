@@ -1,68 +1,134 @@
 package murex.dev.mxem.Authorization.service;
 
 
-import lombok.extern.slf4j.Slf4j;
+import murex.dev.mxem.Authorization.exception.RoleNotFoundException;
+import murex.dev.mxem.Authorization.exception.UserNotFoundException;
 import murex.dev.mxem.Authorization.model.Permission;
 import murex.dev.mxem.Authorization.model.Role;
 import murex.dev.mxem.Authorization.model.RolesPermissions;
 import murex.dev.mxem.Authorization.model.User;
+import murex.dev.mxem.Authorization.repository.RoleRepository;
+import murex.dev.mxem.Authorization.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
-@Slf4j
-public class UserService {
+public class UserService implements IUserService {
+
     @Autowired
-    DiscoveryClient discoveryClient;
+    UserRepository userRepository;
+    @Autowired
+    RoleRepository roleRepository;
 
-    public RolesPermissions getRoles(String username){
-    try{
-            RestTemplate restTemplate = new RestTemplate();
-            URI uri= discoveryClient.getInstances("Users")
-                .stream()
-                .map(si -> si.getUri())
-                .findFirst().get();
+    @Override
+    public List<User> findAllUsers(){
+        List<User> users = (List<User>) userRepository.findAll();
+        return users;
+    }
 
-            URI userUri=new URI(uri.toString()+"/users/"+username+"/roles");
+    @Override
+    public Optional<User> findUserById(Long id) throws UserNotFoundException {
+        Optional<User> user= userRepository.findById(id);
+        if(!user.isPresent()){
+            throw new UserNotFoundException();
+        }
+        return user;
+    }
 
-            ResponseEntity<Role[]> entity = restTemplate.getForEntity(userUri,Role[].class);
-            Role[] roles = entity.getBody();
-        Set<String> permNames =  new HashSet<String>();
-        Set<String> roleNames = new HashSet<String>();
-            for(Role role : roles){
-                roleNames.add(role.getName());
-                URI roleUri = new URI(uri.toString() + "/roles/" + role.getName() + "/permissions");
-               Permission[] permissions = restTemplate.getForEntity(roleUri,Permission[].class).getBody();
-               log.info("Les permissions du role : "+ role.getName()+" sont "+ permissions);
-                for(Permission perm : permissions ){
-                    permNames.add(perm.getName());
-                }
+    @Override
+    public User findUserByName(String id) throws UserNotFoundException {
+        List<User> user= userRepository.findByName(id);
+        if(user.size()==0){
+            throw new UserNotFoundException();
+        }
+        return user.get(0);
+    }
 
-            }
-            log.info("L'ensemble des permissions :" + permNames);
-            RolesPermissions rolesPermissions = new RolesPermissions();
-            rolesPermissions.setRoles(roleNames);
-            rolesPermissions.setPermissions(permNames);
-            return rolesPermissions;
-
-
-    } catch (Exception e) {
-    e.printStackTrace();
-}
-    return null;
+    @Override
+    public Set<Role> findRolesForUser(String id) throws UserNotFoundException {
+        return findUserByName(id).getRoles();
     }
 
 
+    @Override
+    public void deleteAllUsers() {
+        userRepository.deleteAll();
+    }
+
+    @Override
+    public void deleteUserById(Long id) throws UserNotFoundException {
+        Optional<User> result = userRepository.findById(id);
+        if (!result.isPresent()) {
+            throw new UserNotFoundException();
+        }
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteRolesForUser(Long id) throws UserNotFoundException {
+        User user=findUserById(id).get();
+        user.setRoles(Collections.EMPTY_SET);
+        userRepository.save(user);
+    }
+
+
+
+    @Override
+    public Role addRoleForUser(Long userId, Long roleId) throws UserNotFoundException, RoleNotFoundException {
+        Optional<User> userInTable = userRepository.findById(userId);
+        if (!userInTable.isPresent()) {
+            throw new UserNotFoundException();
+        }
+        Optional<Role> roleInTable = roleRepository.findById(roleId);
+        if (!roleInTable.isPresent()) {
+            throw new RoleNotFoundException();
+        }
+        userInTable.get().getRoles().add(roleInTable.get());
+        userRepository.save(userInTable.get());
+        return roleInTable.get();
+    }
+
+    @Override
+    public User addUser(User user) {
+        userRepository.save(user);
+        return user;
+    }
+
+    @Override
+    public User updateUser(Long id, User user) throws UserNotFoundException {
+        Optional<User> userInTable = userRepository.findById(id);
+        if (!userInTable.isPresent()) {
+            throw new UserNotFoundException();
+        }
+        user.setId(id);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User updateNameofUser(Long id, String name) throws UserNotFoundException {
+        User user =findUserById(id).get();
+        user.setName(name);
+        return userRepository.save(user);
+    }
+
+    public RolesPermissions getRolesPermissions(String username){
+        Set<String> permNames =  new HashSet<String>();
+        Set<String> roleNames = new HashSet<String>();
+        User user = userRepository.findByName(username).get(0);
+
+        for(Role role : user.getRoles()){
+            roleNames.add(role.getName());
+
+            for(Permission perm : role.getPermissions() ){
+                permNames.add(perm.getName());
+            }
+
+        }
+        RolesPermissions res = new RolesPermissions();
+        res.setPermissions(permNames);
+        res.setRoles(roleNames);
+        return(res);
+    }
 }

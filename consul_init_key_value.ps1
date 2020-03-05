@@ -1,11 +1,14 @@
-docker exec consul-1 consul kv put config/Authorization/spring.redis.host localhost
-docker exec consul-1 consul kv put config/Authorization/spring.redis.port 6379
+
 docker exec consul-1 consul kv put config/Authorization/application.jwt.secretKey securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecure
 docker exec consul-1 consul kv put config/Authorization/application.jwt.tokenExpirationAfterDays 10
 docker exec consul-1 consul kv put config/Authorization/security.user.name admin
 docker exec consul-1 consul kv put config/Authorization/security.user.password admin
 docker exec consul-1 consul kv put config/Authorization/mxpipeline.ldap.url ldap://root-dc.murex.com:3268
 docker exec consul-1 consul kv put config/Authorization/mxpipeline.ldap.domain murex.com
+docker exec consul-1 consul kv put config/Authorization/spring.datasource.platform postgres
+docker exec consul-1 consul kv put config/Authorization/spring.datasource.url jdbc:postgresql://localhost:5432/userDB
+docker exec consul-1 consul kv put config/Authorization/spring.datasource.username postgres
+docker exec consul-1 consul kv put config/Authorization/spring.datasource.password admin
 
 docker exec consul-1 consul kv put config/Environments/spring.data.mongodb.port 27017
 docker exec consul-1 consul kv put config/Environments/spring.data.mongodb.host localhost

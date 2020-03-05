@@ -5,10 +5,9 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Authorization.config.UsernameAndPasswordAuthenticationRequest;
-import murex.dev.mxem.Authorization.model.Role;
+import murex.dev.mxem.Authorization.exception.TokenNotValidException;
 import murex.dev.mxem.Authorization.model.RolesPermissions;
-import murex.dev.mxem.Authorization.model.User;
-import murex.dev.mxem.Authorization.redis.Token;
+import murex.dev.mxem.Authorization.model.Token;
 import murex.dev.mxem.Authorization.config.JwtConfig;
 import murex.dev.mxem.Authorization.service.TokenService;
 import murex.dev.mxem.Authorization.service.UserService;
@@ -24,11 +23,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
 
 @CrossOrigin( maxAge = 3600)
 @Slf4j
@@ -67,7 +64,7 @@ public class ValidateController {
         Authentication auth =  defaultLdapProvider.authenticate(authentication);
 
         ArrayList<String> authority = new ArrayList<>();
-        RolesPermissions rolesPermissions= userService.getRoles(username);
+        RolesPermissions rolesPermissions= userService.getRolesPermissions(username);
 
         String token = Jwts.builder()
                 .setSubject(auth.getName())
@@ -80,14 +77,7 @@ public class ValidateController {
                 .compact();
         response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
         Token tok = new Token(auth.getName(),token);
-        Token res = tokenService.findById(auth.getName());
-        if(res==null)
-        {
-            tokenService.save(tok);
-        }
-        else{
-            tokenService.update(tok);
-        }
+        tokenService.save(tok);
 
         return(ResponseEntity.ok("Authentication Successful"));
     }
@@ -127,6 +117,7 @@ public class ValidateController {
             return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED );
         }
         token = token.replace("Bearer ", "");
+        log.info("Le tokenservice ici : "+tokenService);
         try {
 
             String user = tokenService.getUserFromToken(token);
@@ -144,8 +135,10 @@ public class ValidateController {
 
         } catch (JwtException e) {
             throw new IllegalStateException(String.format("Token %s cannot be trusted", token));
+        } catch (TokenNotValidException e) {
+            e.printStackTrace();
         }
 
-
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 }

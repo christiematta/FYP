@@ -25,20 +25,20 @@ spring:
             - Path=/login/**
           filters:
             - RewritePath=/login/(?<path>.*), /login/$\{path}
-        - id: Users
-          uri: lb://Users
+        - id: Authorization
+          uri: lb://Authorization
           predicates:
             - Path=/users/**
           filters:
             - RewritePath=/users/(?<path>.*), /users/$\{path}
-        - id: Users
-          uri: lb://Users
+        - id: Authorization
+          uri: lb://Authorization
           predicates:
             - Path=/roles/**
           filters:
             - RewritePath=/roles/(?<path>.*), /roles/$\{path}
-        - id: Users
-          uri: lb://Users
+        - id: Authorization
+          uri: lb://Authorization
           predicates:
             - Path=/permissions/**
           filters:

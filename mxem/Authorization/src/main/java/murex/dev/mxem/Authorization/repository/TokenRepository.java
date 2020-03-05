@@ -1,19 +1,17 @@
 package murex.dev.mxem.Authorization.repository;
 
-import murex.dev.mxem.Authorization.redis.Token;
 
+import murex.dev.mxem.Authorization.model.Token;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public interface TokenRepository{
+import java.util.List;
+import java.util.Optional;
 
-    void save(Token token);
+@Repository
+public interface TokenRepository extends CrudRepository<Token, Long> {
+    Optional<Token> findById(Long id);
+    List<Token> findByUsername(String username);
+    List<Token> findByToken(String token);
 
-    Token findById(String id);
-
-    void update(Token token);
-
-    void delete(String id);
-
-    Boolean tokenExists(String token);
-
-    String getUserFromToken(String token);
 }
