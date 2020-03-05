@@ -95,10 +95,10 @@ public class ValidateController {
        Boolean res = tokenService.tokenExists(token);
 
             if(res==true) {
-                log.info("Token "+token+" is valid");
+                log.info("Token is valid");
                 return new ResponseEntity<Void>( HttpStatus.OK );}
             else{
-                log.info("Token "+token+" is not valid");
+                log.info("Token is not valid");
             return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED);
         }
 
@@ -117,17 +117,16 @@ public class ValidateController {
             return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED );
         }
         token = token.replace("Bearer ", "");
-        log.info("Le tokenservice ici : "+tokenService);
         try {
 
             String user = tokenService.getUserFromToken(token);
 
             if(user!=null) {
-                log.info("Token "+token+" is valid");
+                log.info("Token is valid");
                 response.addHeader("Username",user);
                 return new ResponseEntity<Void>( HttpStatus.OK );}
             else{
-                log.info("Token "+token+" is not valid");
+                log.info("Token is not valid");
                 return new ResponseEntity<Void>( HttpStatus.UNAUTHORIZED);
             }
 

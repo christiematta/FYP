@@ -21,17 +21,13 @@ public class TokenService implements  ITokenService{
     @Override
     public void save(Token token){
         List<Token> tok = tokenRepository.findByUsername(token.getUsername());
-        log.info("Mon token username :"+token.getUsername());
         if(tok.size()==0){
-            log.info("C'est un nouveau token ");
             tokenRepository.save(token);}
         else{
-            log.info("C'est un ancien token ");
             Token newTok= new Token();
             newTok.setId(tok.get(0).getId());
             newTok.setToken(token.getToken());
             newTok.setUsername(token.getUsername());
-            log.info("lancien token :"+newTok);
             tokenRepository.save(newTok);
         }
 
