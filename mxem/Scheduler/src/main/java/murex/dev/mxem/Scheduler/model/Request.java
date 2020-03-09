@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @Document(collection="requests")
-public class SchedulerRequest {
+public class Request {
     @Id
     public String id;
     public String name;
@@ -21,4 +21,5 @@ public class SchedulerRequest {
     public String operation;
     public String status;
     public List<Event> events;
+    public String operationId;
 }

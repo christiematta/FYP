@@ -65,7 +65,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-  
+
 
         String token = authorizationHeader.replace(jwtConfig.getTokenPrefix(), "");
 

@@ -1,8 +1,10 @@
 package murex.dev.mxem.Environments.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import murex.dev.mxem.Environments.exception.OperationNotSupportedException;
 import murex.dev.mxem.Environments.model.Environment;
 import murex.dev.mxem.Environments.model.Event;
+import murex.dev.mxem.Environments.model.Operation;
 import murex.dev.mxem.Environments.model.Request;
 import murex.dev.mxem.Environments.service.AuthorizationService;
 import murex.dev.mxem.Environments.service.EnvironmentService;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
@@ -37,32 +40,41 @@ public class EnvironmentController {
     @Autowired
     RabbitMQService rabbitMQService;
 
-    @GetMapping(value = "{name}/startService")
-    public ResponseEntity<Request> producer(@PathVariable String name) {
+    Boolean isOperationValid(String operationName){
+        for(Operation op : Operation.values() ){
+            if(op.name().equals(operationName)){
+                return true;
+            }
+        }
+        return false;
+    }
 
+    @PostMapping(value = "{name}/operations/{operationName}")
+    public ResponseEntity<Request> producer(@PathVariable String name,@PathVariable String operationName) {
+     try{
+        if(!isOperationValid(operationName)){
+            throw new OperationNotSupportedException();
+        }
         Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy_mm_dd_hh_mm_ss");
-        DateFormat dateFormat2 = new SimpleDateFormat("yyyy-mm-dd");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
+        DateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(date);
 
         Request req = new Request();
         req.setEnvironment(environmentService.findByName(name).get(0));
-        req.setName("request_"+name+"strDate");
+        req.setName("request_"+name+"_"+strDate);
         req.setType("Environment");
-        req.setOperation("start_service");
+        req.setOperation(operationName);
         req.setStatus("Queued");
         ArrayList events = new ArrayList<Event>();
-        Event startEvent = new Event();
-        startEvent.setDate(dateFormat.format(date));
-        startEvent.setEventid("1");
-        startEvent.setDescription("Request to start services on env "+name);
-        startEvent.setTitle("REQ_"+strDate);
-        events.add(startEvent);
         req.setEvents(events);
 
         rabbitMQService.send(req);
 
-        return ResponseEntity.ok(req);
+        return ResponseEntity.ok(req);}
+     catch(OperationNotSupportedException e){
+         throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED, e.getMessage());
+     }
     }
 
 

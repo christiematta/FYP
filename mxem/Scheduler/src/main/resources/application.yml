@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: Environments
+    name: Scheduler
 
 logging:
   file: logs/order.log
