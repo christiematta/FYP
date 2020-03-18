@@ -43,7 +43,11 @@ public class RoleService implements IRoleService {
     }
 
     public Role findRoleByName(String name){
-       return (roleRepository.findByName(name).get(0));
+        if(roleRepository.findByName(name).size()!=0){
+       return (roleRepository.findByName(name).get(0));}
+        else{
+            return null;
+        }
 
     }
 

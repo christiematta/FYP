@@ -9,4 +9,5 @@ package murex.dev.mxem.Scheduler.repository;
 @Repository
 public interface RequestRepository extends MongoRepository<Request, String> {
     List<Request> findByOperationId(String name);
+    List<Request> findByEnvId(String name);
 }

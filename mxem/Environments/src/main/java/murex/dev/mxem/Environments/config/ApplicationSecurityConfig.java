@@ -42,14 +42,33 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .formLogin().disable()
+                .cors()
+                .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(new JwtTokenVerifier(secretKey, jwtConfig), BasicAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/environments/**").hasRole("ADMIN")
-                .antMatchers("/projects/**").authenticated();
+                .antMatchers("/", "index", "/css/*", "/js/*","/error").permitAll()
+                .antMatchers("/environments","/environments/**","/projects","/projects/**").authenticated()
        //       .anyRequest().authenticated();
+
+
+
+//         .csrf().disable()
+//                .formLogin().disable()
+//                .cors()
+//                .and()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter( jwtConfig, secretKey))
+//                .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig), JwtUsernameAndPasswordAuthenticationFilter.class)
+//                .authorizeRequests()
+//                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+//                .antMatchers("/users","/users/**","/permissions","/permissions/**","/roles","/roles/**").authenticated()
+        ;
     }
 
 }

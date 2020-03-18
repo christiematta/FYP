@@ -19,7 +19,7 @@ public class Environment {
     public String path;
     public String version;
     public String owner;
-    public Long projectId;
+    public String projectId;
     public Host host;
     public List<String> tags;
     public List<Database> databases;

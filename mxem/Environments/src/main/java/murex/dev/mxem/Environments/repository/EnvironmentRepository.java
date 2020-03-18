@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface EnvironmentRepository extends MongoRepository<Environment, String> {
     List<Environment> findByName(String name);
-    List<Environment> findByProjectId(Long id);
+    List<Environment> findByProjectId(String id);
 }

@@ -1,6 +1,7 @@
 package murex.dev.mxem.Authorization.service;
 
 
+import lombok.extern.slf4j.Slf4j;
 import murex.dev.mxem.Authorization.exception.RoleNotFoundException;
 import murex.dev.mxem.Authorization.exception.UserNotFoundException;
 import murex.dev.mxem.Authorization.model.Permission;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Slf4j
 public class UserService implements IUserService {
 
     @Autowired
@@ -116,6 +118,7 @@ public class UserService implements IUserService {
     public RolesPermissions getRolesPermissions(String username){
         Set<String> permNames =  new HashSet<String>();
         Set<String> roleNames = new HashSet<String>();
+        log.info("CEST LE USERNAME : "+username);
         User user = userRepository.findByName(username).get(0);
 
         for(Role role : user.getRoles()){

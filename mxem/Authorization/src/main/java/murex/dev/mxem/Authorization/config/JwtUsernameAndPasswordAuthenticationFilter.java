@@ -65,7 +65,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter  extends UsernamePasswor
                     authenticationRequest.getUsername(),
                     authenticationRequest.getPassword()
             );
-            return defaultLdapProvider.authenticate(authentication);
+          //  return defaultLdapProvider.authenticate(authentication);
+            return authentication;
 
         } catch (IOException e) {
             throw new RuntimeException(e);

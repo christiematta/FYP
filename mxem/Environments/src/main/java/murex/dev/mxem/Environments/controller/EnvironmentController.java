@@ -1,6 +1,7 @@
 package murex.dev.mxem.Environments.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import murex.dev.mxem.Environments.exception.EnvironmentNotFoundException;
 import murex.dev.mxem.Environments.exception.OperationNotSupportedException;
 import murex.dev.mxem.Environments.model.Environment;
 import murex.dev.mxem.Environments.model.Event;
@@ -50,31 +51,42 @@ public class EnvironmentController {
     }
 
     @PostMapping(value = "{name}/operations/{operationName}")
-    public ResponseEntity<Request> producer(@PathVariable String name,@PathVariable String operationName) {
+    public ResponseEntity<Request> producer(@PathVariable String name,@PathVariable String operationName,@RequestHeader("Authorization") String token) {
      try{
         if(!isOperationValid(operationName)){
             throw new OperationNotSupportedException();
         }
+        List<Environment> envs = environmentService.findByName(name);
+        if(envs.size()==0){
+            throw new EnvironmentNotFoundException();
+        }
+
+        Environment env = envs.get(0);
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         DateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(date);
 
         Request req = new Request();
-        req.setEnvironment(environmentService.findByName(name).get(0));
+        req.setEnvironment(env);
         req.setName("request_"+name+"_"+strDate);
         req.setType("Environment");
         req.setOperation(operationName);
         req.setStatus("Queued");
+        req.setEnvId(env.getId());
         ArrayList events = new ArrayList<Event>();
         req.setEvents(events);
+        req.setDate(new Date());
+        req.setUser(authorizationService.getUsernameFromToken(token));
 
         rabbitMQService.send(req);
 
         return ResponseEntity.ok(req);}
      catch(OperationNotSupportedException e){
          throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED, e.getMessage());
-     }
+     }catch( EnvironmentNotFoundException e){
+         throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
 
@@ -107,6 +119,17 @@ public class EnvironmentController {
             log.info("Getting the tags for the environment "+name);
             Environment env = environmentService.findByName(name).get(0);
             return ResponseEntity.ok(env.getTags());
+    }
+
+        @PatchMapping(path="/{environmentId}")
+    public ResponseEntity<Environment>updateNameOfEnvironment(@PathVariable String environmentId, @RequestBody String name, @RequestHeader("Authorization") String token) {
+        try {
+            environmentService.updateNameOfEnvironment(environmentId,name,token);  //it saved the new name in the database
+            Environment env=environmentService.findById(environmentId);
+            return ResponseEntity.ok(env);
+        }catch(EnvironmentNotFoundException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,e.getMessage());
+        }
     }
 //
 //    @DeleteMapping
@@ -176,16 +199,7 @@ public class EnvironmentController {
 //        }
 //    }
 //
-//    @PatchMapping(path="/{environmentId}")
-//    public ResponseEntity<Environment>updateNameOfEnvironment(@PathVariable Long environmentId, @RequestBody String name) throws EnvironmentNotFoundException{
-//        try {
-//            environmentService.updateNameofEnvironment(environmentId,name);  //it saved the new name in the database
-//            Optional<Environment>env=environmentService.findEnvironmentById(environmentId);
-//            return ResponseEntity.ok(env.get());
-//        }catch(EnvironmentNotFoundException e){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND,e.getMessage());
-//        }
-//    }
+
 /////////////////////////////////
 //
 //    //Change the env_deleted of the environment to true

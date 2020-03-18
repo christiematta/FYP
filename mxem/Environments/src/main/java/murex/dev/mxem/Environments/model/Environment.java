@@ -21,7 +21,7 @@ public class Environment extends Structure {
     public String path;
     public String version;
     public String owner;
-    public Long projectId;
+    public String projectId;
     public Host host;
     public List<String> tags=new ArrayList<String>();
     public List<Database> databases=new ArrayList<Database>();

@@ -22,9 +22,15 @@ spring:
         - id: Authorization
           uri: lb://Authorization
           predicates:
-            - Path=/login/**
+            - Path=/authorize/**
           filters:
-            - RewritePath=/login/(?<path>.*), /login/$\{path}
+            - RewritePath=/authorize/(?<path>.*), /authorize/$\{path}
+        - id: Authorization
+          uri: lb://Authorization
+          predicates:
+            - Path=/validate/**
+          filters:
+            - RewritePath=/validate/(?<path>.*), /validate/$\{path}
         - id: Authorization
           uri: lb://Authorization
           predicates:
@@ -43,6 +49,12 @@ spring:
             - Path=/permissions/**
           filters:
             - RewritePath=/permissions/(?<path>.*), /permissions/$\{path}
+        - id: Scheduler
+          uri: lb://Scheduler
+          predicates:
+            - Path=/requests/**
+          filters:
+            - RewritePath=/requests/(?<path>.*), /requests/$\{path}
 
 logging.level.com.netflix: DEBUG
 

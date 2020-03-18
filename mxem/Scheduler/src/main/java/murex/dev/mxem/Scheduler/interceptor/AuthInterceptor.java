@@ -39,6 +39,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
                 conn.setRequestMethod("POST");
 
                 if (conn.getResponseCode() !=200) {
+
                     throw new TokenNotValidException();
                 }
                  return true;
