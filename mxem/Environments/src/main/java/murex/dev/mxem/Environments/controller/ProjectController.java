@@ -55,7 +55,7 @@ public class ProjectController {
         Project proj  = projectService.findById(id);
         return ResponseEntity.ok(proj);
     }
-
+//
     @GetMapping("/{id}/environments")
     public ResponseEntity<List<Environment>> getEnvironmentsOfProjects(@PathVariable String id){
         return ResponseEntity.ok(environmentService.findByProjectId(id));
